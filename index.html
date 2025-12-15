@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020015">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8">
+<title>Gift – Tulips & Butterflies</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(#020015, #0b0033);
+  }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+/* =======================
+   LOAD IMAGES
+======================= */
+const butterflyImg = new Image();
+butterflyImg.src = "butterfly.png";
+
+const tulipSources = [
+  "orange.png",
+  "pink.png",
+  "pinkwhite.png",
+  "purple.png",
+  "white.png"
+];
+
+const tulipImgs = [];
+let loaded = 0;
+
+function checkStart() {
+  if (loaded === tulipSources.length + 1) start();
+}
+
+butterflyImg.onload = () => { loaded++; checkStart(); };
+
+tulipSources.forEach(src => {
+  const img = new Image();
+  img.src = src;
+  img.onload = () => { loaded++; checkStart(); };
+  tulipImgs.push(img);
+});
+
+/* =======================
+   BUTTERFLY
+======================= */
+class Butterfly {
+  constructor() {
+    this.x = rand(0, canvas.width);
+   this.y = rand(0, canvas.height);
+
+
+    this.size = rand(30, 60);
+    this.speedX = rand(-1.2, 1.2);
+   this.speedY = rand(-1.4, 1.4);
+
+    this.t = rand(0, Math.PI * 2);
+    this.flapSpeed = rand(3, 6);
+  }
+
+ update() {
+  this.t += 0.03;
+
+  this.x += this.speedX;
+  this.y += Math.sin(this.t) * this.speedY;
+
+  // air current (balanced vertical motion)
+  this.y += Math.sin(this.t * 0.5) * 0.4;
+
+  if (this.x < -100) this.x = canvas.width + 100;
+  if (this.x > canvas.width + 100) this.x = -100;
+
+  if (this.y < -100) this.y = canvas.height + 100;
+  if (this.y > canvas.height + 100) this.y = -100;
+}
+
+
+
+
+
+  draw() {
+    const flap = Math.sin(this.t * this.flapSpeed) * 0.6;
+    const w = this.size;
+    const h = this.size * 0.8;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    // left wing
+    ctx.save();
+    ctx.rotate(-flap);
+    ctx.drawImage(
+      butterflyImg,
+      0, 0, butterflyImg.width / 2, butterflyImg.height,
+      -w / 2, -h / 2, w / 2, h
+    );
+    ctx.restore();
+
+    // right wing
+    ctx.save();
+    ctx.rotate(flap);
+    ctx.drawImage(
+      butterflyImg,
+      butterflyImg.width / 2, 0, butterflyImg.width / 2, butterflyImg.height,
+      0, -h / 2, w / 2, h
+    );
+    ctx.restore();
+
+    ctx.restore();
+  }
+}
+
+/* =======================
+   TULIP
+======================= */
+class Tulip {
+  constructor(x) {
+    this.x = x;
+    this.baseY = canvas.height + 10;
+    this.img = tulipImgs[Math.floor(rand(0, tulipImgs.length))];
+
+    this.growth = 0;
+    this.delay = rand(0, 200);
+    this.timer = 0;
+
+    if (Math.random() < 0.5) {
+      this.maxHeight = rand(50, 100);
+    } else {
+      this.maxHeight = rand(90, 230);
+    }
+
+    this.growSpeed = rand(0.002, 0.004);
+    this.windPhase = rand(0, Math.PI * 2);
+    this.windSpeed = rand(0.8, 1.3);
+    this.windStrength = rand(0.05, 0.14);
+  }
+
+  update() {
+    this.timer++;
+    if (this.timer > this.delay && this.growth < 1) {
+      this.growth += this.growSpeed;
+      if (this.growth > 1) this.growth = 1;
+    }
+    this.windPhase += 0.02;
+  }
+
+  draw() {
+    if (this.growth <= 0) return;
+
+    const sway = Math.sin(this.windPhase * this.windSpeed) * this.windStrength;
+    const h = this.maxHeight * this.growth;
+    const w = h * (this.img.width / this.img.height);
+
+    ctx.save();
+    ctx.translate(this.x, this.baseY);
+    ctx.rotate(sway);
+    ctx.drawImage(this.img, -w / 2, -h, w, h);
+    ctx.restore();
+  }
+}
+
+/* =======================
+   SCENE
+======================= */
+const butterflies = [];
+const tulips = [];
+
+function start() {
+  // tulips
+  const tulipCount = Math.floor(canvas.width / 55);
+  for (let i = 0; i < tulipCount; i++) {
+    tulips.push(new Tulip(rand(40, canvas.width - 40)));
+  }
+
+  // butterflies
+  for (let i = 0; i < 25; i++) {
+    butterflies.push(new Butterfly());
+  }
+
+  animate();
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // draw order matters
+  tulips.forEach(t => {
+    t.update();
+    t.draw();
+  });
+
+  butterflies.forEach(b => {
+    b.update();
+    b.draw();
+  });
+
+  requestAnimationFrame(animate);
+}
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
