@@ -39,8 +39,22 @@ function rand(min, max) {
 /* =======================
    LOAD IMAGES
 ======================= */
-const butterflyImg = new Image();
-butterflyImg.src = "butterfly.png";
+
+
+const butterflySources = [
+  "butterfly.png",
+  "butterfly1.jpeg",
+  "butterfly2.png",
+  "butterfly3.png",
+  "butterfly4.png"
+];
+butterflySources.forEach(src => {
+  const img = new Image();
+  img.src = src;
+  img.onload = () => { loaded++; checkStart(); };
+  butterflyImgs.push(img);
+});
+
 
 const tulipSources = [
   "orange.png",
@@ -54,10 +68,11 @@ const tulipImgs = [];
 let loaded = 0;
 
 function checkStart() {
-  if (loaded === tulipSources.length + 1) start();
+  if (loaded === tulipSources.length + butterflySources.length) start();
+
 }
 
-butterflyImg.onload = () => { loaded++; checkStart(); };
+
 
 tulipSources.forEach(src => {
   const img = new Image();
@@ -70,7 +85,12 @@ tulipSources.forEach(src => {
    BUTTERFLY
 ======================= */
 class Butterfly {
-  constructor() {
+  constructor()
+   {
+    this.img = butterflyImgs[
+  Math.floor(Math.random() * butterflyImgs.length)
+];
+
     this.x = rand(0, canvas.width);
    this.y = rand(0, canvas.height);
 
@@ -103,36 +123,37 @@ class Butterfly {
 
 
 
-  draw() {
-    const flap = Math.sin(this.t * this.flapSpeed) * 0.6;
-    const w = this.size;
-    const h = this.size * 0.8;
+ draw() {
+  const flap = Math.sin(this.t * this.flapSpeed) * 0.6;
+  const w = this.size;
+  const h = this.size * 0.8;
 
-    ctx.save();
-    ctx.translate(this.x, this.y);
+  ctx.save();
+  ctx.translate(this.x, this.y);
 
-    // left wing
-    ctx.save();
-    ctx.rotate(-flap);
-    ctx.drawImage(
-      butterflyImg,
-      0, 0, butterflyImg.width / 2, butterflyImg.height,
-      -w / 2, -h / 2, w / 2, h
-    );
-    ctx.restore();
+  // left wing
+  ctx.save();
+  ctx.rotate(-flap);
+  ctx.drawImage(
+    this.img,
+    0, 0, this.img.width / 2, this.img.height,
+    -w / 2, -h / 2, w / 2, h
+  );
+  ctx.restore();
 
-    // right wing
-    ctx.save();
-    ctx.rotate(flap);
-    ctx.drawImage(
-      butterflyImg,
-      butterflyImg.width / 2, 0, butterflyImg.width / 2, butterflyImg.height,
-      0, -h / 2, w / 2, h
-    );
-    ctx.restore();
+  // right wing
+  ctx.save();
+  ctx.rotate(flap);
+  ctx.drawImage(
+    this.img,
+    this.img.width / 2, 0, this.img.width / 2, this.img.height,
+    0, -h / 2, w / 2, h
+  );
+  ctx.restore();
 
-    ctx.restore();
-  }
+  ctx.restore();
+}
+
 }
 
 /* =======================
