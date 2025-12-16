@@ -1,12 +1,4 @@
 const CACHE_NAME = "gift-v1";
-const butterflyImages = [
-  "butterfly.png",
-  "butterfly1.png",
-  "butterfly2.png",
-  "butterfly3.png",
-  "butterfly4.png",
-  "butterfly5.png"
-];
 
 const FILES = [
   "./",

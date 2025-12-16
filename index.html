@@ -40,7 +40,6 @@ function rand(min, max) {
    LOAD IMAGES
 ======================= */
 
-
 const butterflySources = [
   "butterfly.png",
   "butterfly1.jpeg",
@@ -48,13 +47,6 @@ const butterflySources = [
   "butterfly3.png",
   "butterfly4.png"
 ];
-butterflySources.forEach(src => {
-  const img = new Image();
-  img.src = src;
-  img.onload = () => { loaded++; checkStart(); };
-  butterflyImgs.push(img);
-});
-
 
 const tulipSources = [
   "orange.png",
@@ -64,16 +56,25 @@ const tulipSources = [
   "white.png"
 ];
 
+const butterflyImgs = [];
 const tulipImgs = [];
 let loaded = 0;
 
 function checkStart() {
-  if (loaded === tulipSources.length + butterflySources.length) start();
-
+  if (loaded === butterflySources.length + tulipSources.length) {
+    start();
+  }
 }
 
+// preload butterflies
+butterflySources.forEach(src => {
+  const img = new Image();
+  img.src = src;
+  img.onload = () => { loaded++; checkStart(); };
+  butterflyImgs.push(img);
+});
 
-
+// preload tulips
 tulipSources.forEach(src => {
   const img = new Image();
   img.src = src;
